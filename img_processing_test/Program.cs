@@ -5,22 +5,24 @@ using CommandLine;
 namespace img_processing_test;
 
 [SuppressMessage("Interoperability", "CA1416:Validate platform compatibility")]
-internal class Program
+internal static class Program
 {
     static async Task<int> Main(String[] args)
     {
+        
+        //return ProcessImage(@"C:\Studia\2022_Winter\Image Processing\Tinkering\TestImages\small.bmp", @"C:\Studia\2022_Winter\Image Processing\Tinkering\result.bmp");
         return await Parser.Default.ParseArguments<CommandLineOptions>(args)
             .MapResult(async opts =>
             {
-                try
-                {
+                //try
+                //{
                     return ProcessImage(opts.SourcePath, opts.SavePath);
-                }
-                catch
-                {
-                    Console.WriteLine("Error!");
-                    return -3;
-                }
+                //}
+                //catch
+                // {
+                //     Console.WriteLine("Error!");
+                //     return -3;
+                // }
             }, errs => Task.FromResult(-1));
     }
 
@@ -28,52 +30,35 @@ internal class Program
     {
         if (source == null || save == null) throw new Exception("No path was passed!");
 
-        using (var image = new Bitmap(source))
-        {
-            Bitmap bitmap = new Bitmap(image);
-            bitmap = SmoothImage(bitmap, 10);
-            bitmap.Save(save);
-        }
-        return 0;
-    }
+        using Bitmap image = new(source);
+        Bitmap bitmap = new(image);
 
-    private static Bitmap SmoothImage(Bitmap bitmap, int iterations)
-    {
-        for (int iteration = 0; iteration < iterations; iteration++)
-        {
-            for (int i = 1; i < bitmap.Height - 1; i++)
-            {
-                for (int j = 1; j < bitmap.Height - 1; j++)
-                {
-                    bitmap.SetPixel(i, j, GetAverageColorFromNeighbouringPixels(bitmap,i,j));
-                }
-            }
-        }
-
-        return bitmap;
-    }
-
-    private static Color GetAverageColorFromNeighbouringPixels(Bitmap bitmap, int x, int y)
-    {
-        int a = 0, r = 0, g = 0, b = 0;
-        for (int i = x - 1; i <= x + 1; i++)
-        {
-            for (int j = y - 1; j <= y + 1; j++)
-            {
-                if (i == x && j == y) continue;
-                Color color = bitmap.GetPixel(i, j);
-                a += color.A;
-                r += color.R;
-                g += color.G;
-                b += color.B;
-            }
-        }
-
-        a /= 8;
-        r /= 8;
-        g /= 8;
-        b /= 8;
+        Console.Write("Number of operation: ");
+        int input = Convert.ToInt32(Console.ReadLine());
         
-        return Color.FromArgb(a, r, g, b);
+        Console.Write("Number of iterations: ");
+        int iterations = Convert.ToInt32(Console.ReadLine());
+        
+        switch (input)
+        {
+            case 1:
+                bitmap = ImageSmoothing.SmoothImage(bitmap, iterations);
+                break;
+            case 2:
+                bitmap = ImageConvolution.VerticalEdge(bitmap, iterations);
+                break;
+            case 3:
+                bitmap = ImageSmoothing.SmoothImage(bitmap, iterations);
+                break;
+            case 4:
+                bitmap = ImageSmoothing.SmoothImage(bitmap, iterations);
+                break;
+            case 5:
+                bitmap = ImageSmoothing.SmoothImage(bitmap, iterations);
+                break;
+        }
+        
+        bitmap.Save(save);
+        return 0;
     }
 }
